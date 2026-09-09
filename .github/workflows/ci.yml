@@ -66,6 +66,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Each job gets a clean runner, so the workspace packages built in `verify`
+      # are not here. The console resolves @stratus/shared-types through its
+      # dist/ output, which does not exist until they are compiled.
+      - name: Build packages
+        run: pnpm -r --filter "./packages/**" build
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
@@ -100,6 +106,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Same reason as above: `pnpm db:migrate` imports @stratus/config, which
+      # resolves to dist/index.js.
+      - name: Build packages
+        run: pnpm -r --filter "./packages/**" build
 
       - name: Start infrastructure
         run: docker compose -f infrastructure/docker/docker-compose.yml up -d kafka postgres redis
