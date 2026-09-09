@@ -1,0 +1,14 @@
+{
+  "name": "@stratus/event-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Replays realistic infrastructure signal traffic against a running STRATUS stack",
+  "bin": { "stratus-simulate": "./dist/main.js" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/main.ts"
+  },
+  "dependencies": { "@stratus/shared-types": "workspace:*" }
+}
