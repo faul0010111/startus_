@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stratus-api
+  namespace: stratus
+  labels: { app.kubernetes.io/name: stratus-api, app.kubernetes.io/part-of: stratus }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app.kubernetes.io/name: stratus-api }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: stratus-api }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: stratus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: api
+          image: ghcr.io/stratus/stratus-api:latest
+          ports: [{ containerPort: 4000, name: http }]
+          envFrom:
+            - configMapRef: { name: stratus-config }
+          env:
+            - name: STRATUS_API_PORT
+              value: "4000"
+            - name: POSTGRES_URL
+              valueFrom: { secretKeyRef: { name: stratus-postgres, key: url } }
+          # The platform rejects workloads without limits; STRATUS ships with them.
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stratus-api
+  namespace: stratus
+spec:
+  selector: { app.kubernetes.io/name: stratus-api }
+  ports: [{ port: 80, targetPort: 4000, name: http }]

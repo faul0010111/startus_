@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: stratus
+    folder: STRATUS
+    type: file
+    options: { path: /var/lib/grafana/dashboards }

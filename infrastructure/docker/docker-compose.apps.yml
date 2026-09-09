@@ -1,0 +1,50 @@
+# Runs the STRATUS services themselves. Use together with docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.apps.yml up -d
+name: stratus
+
+x-service-env: &service-env
+  NODE_ENV: production
+  KAFKA_BROKERS: kafka:9092
+  POSTGRES_URL: postgres://stratus:stratus@postgres:5432/stratus
+  REDIS_URL: redis://redis:6379
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+
+services:
+  stratus-api:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: stratus-api } }
+    environment: { <<: *service-env, STRATUS_API_PORT: "4000" }
+    ports: ["4000:4000"]
+    depends_on: [kafka, postgres, redis]
+
+  signal-engine:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: signal-engine } }
+    environment: { <<: *service-env, SIGNAL_ENGINE_PORT: "4010" }
+    ports: ["4010:4010"]
+    depends_on: [kafka]
+
+  event-processor:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: event-processor } }
+    environment: { <<: *service-env, EVENT_PROCESSOR_PORT: "4020" }
+    depends_on: [kafka]
+
+  security-engine:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: security-engine } }
+    environment: { <<: *service-env, SECURITY_ENGINE_PORT: "4030" }
+    depends_on: [kafka, redis]
+
+  risk-engine:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: risk-engine } }
+    environment: { <<: *service-env, RISK_ENGINE_PORT: "4040" }
+    depends_on: [kafka, redis]
+
+  incident-service:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.service, args: { SERVICE: incident-service } }
+    environment: { <<: *service-env, INCIDENT_SERVICE_PORT: "4050" }
+    depends_on: [kafka, postgres]
+
+  stratus-console:
+    build: { context: ../.., dockerfile: infrastructure/docker/Dockerfile.console }
+    environment:
+      NEXT_PUBLIC_STRATUS_API_URL: http://localhost:4000
+    ports: ["3000:3000"]
+    depends_on: [stratus-api]

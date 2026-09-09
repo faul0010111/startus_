@@ -1,0 +1,26 @@
+# Default deny, then open only the paths the platform actually uses.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: stratus
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-platform-traffic
+  namespace: stratus
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: {}
+        - namespaceSelector: { matchLabels: { name: ingress } }
+  egress:
+    - to: [{ podSelector: {} }]
+    - to: [{ namespaceSelector: { matchLabels: { name: observability } } }]
+    - ports: [{ port: 53, protocol: UDP }]

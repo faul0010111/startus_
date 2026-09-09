@@ -1,0 +1,17 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: event-processor
+  namespace: stratus
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: event-processor }
+  minReplicas: 3
+  maxReplicas: 12
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+    # Scale on backlog, not just CPU: lag is what users feel.
+    - type: Pods
+      pods:
+        metric: { name: stratus_consumer_lag_messages }
+        target: { type: AverageValue, averageValue: "500" }

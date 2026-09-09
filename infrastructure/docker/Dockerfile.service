@@ -1,0 +1,30 @@
+# Multi-stage build shared by every Node service in the monorepo.
+FROM node:22-alpine AS base
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
+RUN corepack enable
+WORKDIR /repo
+
+FROM base AS deps
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+COPY packages ./packages
+COPY apps ./apps
+COPY tools ./tools
+RUN pnpm install --no-frozen-lockfile
+
+FROM deps AS build
+ARG SERVICE
+COPY tsconfig.base.json ./
+RUN pnpm --filter "./packages/**" build && pnpm --filter "./apps/${SERVICE}" build
+
+FROM node:22-alpine AS runtime
+ARG SERVICE
+ENV NODE_ENV=production
+# Never run the runtime as root: the image has no reason to write to itself.
+RUN addgroup -S stratus && adduser -S stratus -G stratus
+WORKDIR /app
+COPY --from=build --chown=stratus:stratus /repo /app
+USER stratus
+ENV SERVICE=${SERVICE}
+HEALTHCHECK --interval=15s --timeout=3s --retries=4 \
+  CMD wget -qO- "http://127.0.0.1:${PORT:-4000}/healthz" || exit 1
+CMD ["sh", "-c", "node apps/${SERVICE}/dist/main.js"]

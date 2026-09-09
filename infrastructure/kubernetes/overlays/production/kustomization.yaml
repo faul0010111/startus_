@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: stratus
+resources:
+  - ../../base
+replicas:
+  - { name: stratus-api, count: 4 }
+  - { name: event-processor, count: 6 }
+  - { name: security-engine, count: 6 }
+images:
+  - { name: ghcr.io/stratus/stratus-api, newTag: v0.1.0 }
+  - { name: ghcr.io/stratus/signal-engine, newTag: v0.1.0 }
+  - { name: ghcr.io/stratus/event-processor, newTag: v0.1.0 }
+  - { name: ghcr.io/stratus/security-engine, newTag: v0.1.0 }
+  - { name: ghcr.io/stratus/risk-engine, newTag: v0.1.0 }
+  - { name: ghcr.io/stratus/incident-service, newTag: v0.1.0 }

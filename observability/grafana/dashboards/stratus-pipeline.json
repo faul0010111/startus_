@@ -1,0 +1,48 @@
+{
+  "uid": "stratus-pipeline",
+  "title": "STRATUS — Signal Pipeline",
+  "tags": ["stratus", "sre"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Signals ingested per second",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (topic) (rate(stratus_events_produced_total[5m]))", "legendFormat": "{{topic}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Processing latency (p95)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, service) (rate(stratus_event_processing_seconds_bucket[5m])))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumer lag",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{ "expr": "max by (service, topic) (stratus_consumer_lag_messages)", "legendFormat": "{{service}}" }]
+    },
+    {
+      "type": "stat",
+      "title": "Open critical findings (production)",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+      "targets": [{ "expr": "sum(stratus_open_findings{severity=\"critical\", environment=\"production\"})" }]
+    },
+    {
+      "type": "stat",
+      "title": "Highest risk score",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
+      "targets": [{ "expr": "max(stratus_risk_score)" }]
+    }
+  ]
+}

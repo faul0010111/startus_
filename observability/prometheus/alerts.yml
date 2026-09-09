@@ -1,0 +1,42 @@
+groups:
+  - name: stratus-pipeline
+    rules:
+      # The pipeline failing silently is worse than any single finding.
+      - alert: StratusConsumerLagGrowing
+        expr: max by (service, topic) (stratus_consumer_lag_messages) > 5000
+        for: 10m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.service }} is falling behind on {{ $labels.topic }}"
+          description: "Signals are arriving faster than they are processed; detections are delayed."
+
+      - alert: StratusDeadLetterSpike
+        expr: increase(stratus_events_consumed_total{outcome="error"}[15m]) > 50
+        for: 5m
+        labels: { severity: high }
+        annotations:
+          summary: "Contract violations or handler failures on {{ $labels.topic }}"
+
+      - alert: StratusIngestionStalled
+        expr: rate(stratus_events_produced_total{topic="stratus.signal.received"}[10m]) == 0
+        for: 15m
+        labels: { severity: critical }
+        annotations:
+          summary: "No signals ingested for 15 minutes"
+          description: "Either every collector is down or the signal engine is not publishing."
+
+  - name: stratus-posture
+    rules:
+      - alert: StratusRiskDegrading
+        expr: max by (environment) (stratus_risk_score) > 85
+        for: 30m
+        labels: { severity: high }
+        annotations:
+          summary: "Risk score above 85 in {{ $labels.environment }}"
+
+      - alert: StratusCriticalFindingsOpen
+        expr: sum(stratus_open_findings{severity="critical", environment="production"}) > 20
+        for: 1h
+        labels: { severity: high }
+        annotations:
+          summary: "More than 20 critical findings open in production"

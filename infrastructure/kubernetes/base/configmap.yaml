@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stratus-config
+  namespace: stratus
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  KAFKA_BROKERS: "kafka-bootstrap.stratus.svc.cluster.local:9092"
+  REDIS_URL: "redis://redis.stratus.svc.cluster.local:6379"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4318"
+  OTEL_SERVICE_NAMESPACE: "stratus"
