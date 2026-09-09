@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --void: #08090a;
+  --surface: #0e1012;
+  --raised: #14171a;
+  --hairline: #22272b;
+  --ink: #e6e9ec;
+  --muted: #7d8790;
+  --healthy: #35d07f;
+  --warn: #e8b931;
+  --danger: #ff4d4f;
+  --signal: #4aa8ff;
+}
+
+body {
+  background-color: var(--void);
+  color: var(--ink);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
+
+/* Dense grids read better with a hairline than with card shadows. */
+.panel {
+  background-color: var(--surface);
+  border: 1px solid var(--hairline);
+}
+
+.grid-lines {
+  background-image: linear-gradient(var(--hairline) 1px, transparent 1px);
+  background-size: 100% 28px;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

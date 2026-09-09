@@ -1,0 +1,25 @@
+{
+  "name": "@stratus/signal-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Collects and normalizes infrastructure signals",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/core": "^11.2.3",
+    "@nestjs/platform-express": "^11.2.3",
+    "@stratus/config": "workspace:*",
+    "@stratus/event-contracts": "workspace:*",
+    "@stratus/observability": "workspace:*",
+    "@stratus/shared-types": "workspace:*",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.23.8"
+  }
+}
