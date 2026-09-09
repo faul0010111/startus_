@@ -1,4 +1,4 @@
-# STRATUS
+# Stratus
 
 **Event-driven cloud security and infrastructure intelligence.**
 
