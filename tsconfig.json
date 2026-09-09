@@ -1,0 +1,38 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@stratus/shared-types": [
+        "packages/shared-types/src/index.ts"
+      ],
+      "@stratus/event-contracts": [
+        "packages/event-contracts/src/index.ts"
+      ],
+      "@stratus/security-rules": [
+        "packages/security-rules/src/index.ts"
+      ],
+      "@stratus/config": [
+        "packages/config/src/index.ts"
+      ],
+      "@stratus/observability": [
+        "packages/observability/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "apps/signal-engine/src/**/*.ts",
+    "apps/event-processor/src/**/*.ts",
+    "apps/security-engine/src/**/*.ts",
+    "apps/risk-engine/src/**/*.ts",
+    "apps/incident-service/src/**/*.ts",
+    "apps/stratus-api/src/**/*.ts",
+    "tools/event-simulator/src/**/*.ts",
+    "tests/**/*.ts"
+  ]
+}
