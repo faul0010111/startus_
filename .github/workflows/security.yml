@@ -64,13 +64,29 @@ jobs:
       # rewritten during the March 2026 supply-chain compromise and later
       # removed, which is why @0.24.0 no longer resolves. Tags now carry a `v`
       # prefix; SHA pinning is the post-incident recommendation.
-      - name: Run Trivy infrastructure scan
+      #
+      # Two steps on purpose. With `format: sarif` the action unsets
+      # TRIVY_SEVERITY ("Building SARIF report with all severities"), so a
+      # single step would silently ignore `severity:` and fail the build on
+      # MEDIUM/LOW findings. The gate below therefore runs in table format,
+      # where the severity filter is honoured, and the SARIF is produced
+      # separately with every severity so Code Scanning keeps full visibility.
+      - name: Trivy infrastructure gate (HIGH/CRITICAL)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: config
           scan-ref: infrastructure
           severity: HIGH,CRITICAL
           exit-code: "1"
+          format: table
+
+      - name: Trivy infrastructure report (all severities)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        if: always()
+        with:
+          scan-type: config
+          scan-ref: infrastructure
+          exit-code: "0"
           format: sarif
           output: trivy.sarif
 
